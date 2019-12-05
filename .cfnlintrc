@@ -1,0 +1,4 @@
+templates:
+- src/cfn/**/*.yml
+include_checks:
+- I

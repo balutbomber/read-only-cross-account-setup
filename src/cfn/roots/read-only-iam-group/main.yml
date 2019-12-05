@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  This tempalte creates groups for allowing cross account access.  The users can manage their own IAM.
+  This must be run in the account which contains the IAM users.
+
+Parameters:
+  Stage: 
+    Description: The stage we are deploying to
+    Type: String
+    Default: dev
+  Tag: 
+    Description: Tracking tag
+    Type: String
+    Default: oncore-otc
+  SubAccountId:
+    Type: String
+    Description: AWS Account Id of the account allowing cross account access.
+    MaxLength: 12
+    MinLength: 12     
+
+Resources:  
+
+  CrossAccountReadOnlyGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub CrossAccountReadOnlyGroup-${Tag}-${Stage}
+      ManagedPolicyArns: 
+      - !Ref IAMSelfManagePolicy
+      - !Ref AssumeCrossAccountReadOnlyRolePolicy
+
+  AssumeCrossAccountReadOnlyRolePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub AssumeCrossAccountReadOnlyRolePolicy-${Tag}-${Stage}
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+            - sts:AssumeRole
+          Resource: !Sub arn:aws:iam::${SubAccountId}:role/CrossAccountReadOnlyRole-${Tag}-${Stage}
+          Condition:
+            BoolIfExists:
+                aws:MultiFactorAuthPresent: 'true'
+
+  IAMSelfManagePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub IAMSelfManagePolicy-${Tag}-${Stage}
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action: 
+            - iam:*AccessKey*
+            - iam:*SSHPublicKey*
+            - iam:*LoginProfile
+            - iam:ChangePassword
+          Resource: !Join [ "", [ 'arn:aws:iam:', !Sub ':${AWS::AccountId}:', 'user/${aws:username}'] ]
+        - Effect: Allow
+          Action: 
+            - iam:GetAccountPasswordPolicy
+            - iam:ListAccount*
+            - iam:ListUsers
+            - iam:ListMFADevices
+            - iam:ListVirtualMFADevices
+            - iam:GetAccountSummary      
+          Resource: '*'
+        - Effect: Allow
+          Action:             
+            - iam:DeactivateMFADevice
+            - iam:EnableMFADevice
+            - iam:ResyncMFADevice      
+          Resource: !Join [ "", [ 'arn:aws:iam:', !Sub ':${AWS::AccountId}:', 'user/${aws:username}'] ]
+        - Effect: Allow
+          Action:             
+            - iam:DeleteVirtualMFADevice
+            - iam:CreateVirtualMFADevice
+          Resource:
+            - !Join [ "", [ 'arn:aws:iam:', !Sub ':${AWS::AccountId}:', 'user/${aws:username}'] ]
+            - !Join [ "", [ 'arn:aws:iam:', !Sub ':${AWS::AccountId}:', 'mfa/${aws:username}'] ]

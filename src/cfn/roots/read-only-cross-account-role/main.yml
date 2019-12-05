@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Configuration for a read only cross account role.
+  This template creates a single role with the AWS ReadOnlyAccess policy attached to it.  Users from the Federation
+  Account represented by the FederationAccountId can assume this role.
+Parameters:
+  Stage: 
+    Description: The stage we are deploying to.  This allows dev, test, prod, etc deployments
+    Type: String
+    Default: dev
+  Tag: 
+    Description: Tracking tag.
+    Type: String
+    Default: oncore-otc
+  FederationAccountId:
+    Type: String
+    Description: AWS Account Id of the federation account, this is the account where IAM users live.
+    MaxLength: 12
+    MinLength: 12 
+
+Resources:
+  CrossAccountReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub CrossAccountReadOnlyRole-${Tag}-${Stage}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Ref FederationAccountId
+            Action:
+              - sts:AssumeRole
+            Condition:
+              Bool:
+                aws:MultiFactorAuthPresent: 'true'
+
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+
