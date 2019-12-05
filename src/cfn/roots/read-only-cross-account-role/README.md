@@ -10,14 +10,14 @@ This template **MUST** be executed in each sub account.  It provides the read on
 
 ## Usage
 
-`aws cloudformation deploy --template-file ./src/cfn/roots/read-only-cross-account-role/main.yml --stack-name oncore-otc-readonly-role --capabilities CAPABILITY_NAMED_IAM --parameter-overrides FederationAccountId=federation_account_id Stage=prod Tag=oncore-otc`
+`aws cloudformation deploy --template-file ./src/cfn/roots/read-only-cross-account-role/main.yml --stack-name oncore-otc-readonly-role --profile named_profile --capabilities CAPABILITY_NAMED_IAM --parameter-overrides FederationAccountId=federation_account_id Stage=prod Tag=oncore-otc`
 
 
 * **federation\_account\_id** the AWS account id of the account where the IAM users reside.
 
 **NOTE** --parameter-overrides can be ommited if updating the stack and **federation\_account\_id** has not changed.
 
-
+* **named_profile** - the named profile of the aws account being deployed to
 * **the_stage** - the name of the stage deploying to. eg. dev | test | prod
 * **the_tag** - the tag for the deployment.  eg. oncore-otc
 

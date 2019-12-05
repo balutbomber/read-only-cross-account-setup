@@ -15,13 +15,14 @@ Once this template is run, add any IAM users to the group which need read only a
 
 ## Usage
 
-`aws cloudformation deploy --template-file ./src/cfn/roots/read-only-iam-group/main.yml --stack-name oncore-otc-readonly-group --capabilities CAPABILITY_NAMED_IAM --parameter-overrides SubAccountId=sub_account_id Stage=prod Tag=oncore-otc`
+`aws cloudformation deploy --template-file ./src/cfn/roots/read-only-iam-group/main.yml --stack-name oncore-otc-readonly-group --profile named_profile --capabilities CAPABILITY_NAMED_IAM --parameter-overrides SubAccountId=sub_account_id Stage=prod Tag=oncore-otc`
 
 
 * **sub\_account\_id** the AWS account id of the account where users will assume the read only role.
 
 **NOTE** --parameter-overrides can be ommited if updating the stack and **sub\_account\_id** has not changed.
 
+* **named_profile** - the named profile of the aws account being deployed to
 * **the_stage** - the name of the stage deploying to. eg. dev | test | prod
 * **the_tag** - the tag for the deployment.  eg. oncore-otc
 
